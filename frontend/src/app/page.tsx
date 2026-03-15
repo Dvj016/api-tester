@@ -39,10 +39,31 @@ export default function Home() {
         setSelectedModel(modelList[0] || '');
       } catch (error) {
         console.error('Failed to load models:', error);
+        // Fallback to default models if backend is not available
+        const defaultModels = getDefaultModels(selectedProvider);
+        setModels(defaultModels);
+        setSelectedModel(defaultModels[0] || '');
       }
     };
     loadModels();
   }, [selectedProvider]);
+
+  // Default models for each provider (fallback when backend is unavailable)
+  const getDefaultModels = (provider: Provider): string[] => {
+    const defaults: Record<Provider, string[]> = {
+      openai: ['gpt-4', 'gpt-4-turbo-preview', 'gpt-3.5-turbo'],
+      anthropic: ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'],
+      gemini: ['gemini-pro', 'gemini-pro-vision'],
+      nvidia: ['meta/llama2-70b', 'mistralai/mixtral-8x7b-instruct-v0.1'],
+      cohere: ['command', 'command-light', 'command-nightly'],
+      mistral: ['mistral-tiny', 'mistral-small', 'mistral-medium'],
+      huggingface: ['gpt2', 'facebook/opt-350m', 'bigscience/bloom-560m'],
+      replicate: ['meta/llama-2-70b-chat', 'stability-ai/sdxl'],
+      together: ['togethercomputer/llama-2-70b-chat', 'mistralai/Mixtral-8x7B-Instruct-v0.1'],
+      perplexity: ['pplx-7b-chat', 'pplx-70b-chat', 'pplx-7b-online']
+    };
+    return defaults[provider] || ['default-model'];
+  };
 
   // Toggle dark mode
   useEffect(() => {
