@@ -26,7 +26,7 @@ export default function Feedback() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          access_key: 'YOUR_WEB3FORMS_ACCESS_KEY', // Replace with your Web3Forms access key
+          access_key: 'e4cbf456-0007-40d6-80da-e61632e61112', // Replace with your Web3Forms access key
           name: formData.name || 'Anonymous',
           email: formData.email,
           message: formData.message,
