@@ -7,6 +7,7 @@ import { Provider, TestResponse, ProviderConfig } from '@/lib/types';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import ResultCard from '@/components/ResultCard';
 import VisitorCounter from '@/components/VisitorCounter';
+import VoiceWelcome from '@/components/VoiceWelcome';
 
 const PROVIDERS: ProviderConfig[] = [
   { name: 'OpenAI', value: 'openai', description: 'GPT-4, GPT-3.5', icon: '🤖' },
@@ -128,6 +129,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Voice Welcome Component */}
+      <VoiceWelcome />
+      
       {/* Header */}
       <header className="border-b border-gray-700 bg-gray-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
