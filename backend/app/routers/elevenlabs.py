@@ -199,10 +199,12 @@ async def generate_voice(request: VoiceGenerateRequest):
                 )
             
             elif response.status_code == 401:
-                logger.error("Invalid ElevenLabs API key")
+                error_detail = response.text
+                logger.error(f"Invalid ElevenLabs API key. Response: {error_detail}")
+                logger.error(f"API key used: {mask_api_key(api_key)}")
                 raise HTTPException(
                     status_code=401,
-                    detail="Invalid API key configured on server"
+                    detail=f"Invalid API key: {error_detail}"
                 )
             
             elif response.status_code == 429:
