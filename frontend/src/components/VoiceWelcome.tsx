@@ -14,29 +14,14 @@ export default function VoiceWelcome() {
       return;
     }
 
-    // Function to play welcome message using ElevenLabs
+    // Function to play welcome message using ElevenLabs via backend proxy
     const playWelcome = async () => {
       if (hasPlayed) return;
 
       try {
-        // ElevenLabs API configuration
-        const ELEVENLABS_API_KEY = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
-        
         // Custom voice ID (your selected voice)
-        // Other popular options:
-        // - Rachel: 21m00Tcm4TlvDq8ikWAM (warm, friendly)
-        // - Bella: EXAVITQu4vr4xnSDxMaL (warm, friendly)
-        // - Elli: MF3mGyEYCl7XYWbV9V6O (young, energetic)
-        // - Dorothy: ThT5KcBeYPX3keUQqHPh (mature, authoritative)
         const VOICE_ID = 'ZT9u07TYPVl83ejeLakq'; // Your custom voice
-        
         const message = "Hey! Welcome to AI API Key Tester. Happy to help you test your API keys!";
-
-        if (!ELEVENLABS_API_KEY) {
-          console.warn('ElevenLabs API key not found, falling back to browser voice');
-          playBrowserVoice(message);
-          return;
-        }
 
         // Check if audio is already cached
         const cachedAudio = localStorage.getItem('welcomeAudioCache');
@@ -56,23 +41,19 @@ export default function VoiceWelcome() {
           return;
         }
 
-        // Generate audio using ElevenLabs
+        // Generate audio using backend proxy (secure - API key not exposed)
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-tester-backend.onrender.com';
         const response = await fetch(
-          `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+          `${backendUrl}/api/elevenlabs/generate-voice`,
           {
             method: 'POST',
             headers: {
-              'Accept': 'audio/mpeg',
               'Content-Type': 'application/json',
-              'xi-api-key': ELEVENLABS_API_KEY,
             },
             body: JSON.stringify({
               text: message,
+              voice_id: VOICE_ID,
               model_id: 'eleven_monolingual_v1',
-              voice_settings: {
-                stability: 0.5,
-                similarity_boost: 0.75,
-              },
             }),
           }
         );

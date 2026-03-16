@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from typing import Optional
 import httpx
 import time
+import os
 from app.utils.logger import setup_logger
 from app.utils.security import mask_api_key
 
@@ -135,6 +137,104 @@ async def test_elevenlabs_key(request: ElevenLabsTestRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Error testing API key: {str(e)}"
+        )
+
+
+class VoiceGenerateRequest(BaseModel):
+    """Request model for voice generation"""
+    text: str = Field(..., description="Text to convert to speech")
+    voice_id: Optional[str] = Field("21m00Tcm4TlvDq8ikWAM", description="Voice ID")
+    model_id: Optional[str] = Field("eleven_monolingual_v1", description="Model ID")
+
+
+@router.post("/elevenlabs/generate-voice")
+async def generate_voice(request: VoiceGenerateRequest):
+    """
+    Generate voice audio using ElevenLabs API
+    
+    This endpoint proxies the request to ElevenLabs to avoid exposing API keys on frontend.
+    The API key is stored securely in backend environment variables.
+    """
+    try:
+        # Get API key from environment
+        api_key = os.getenv("ELEVENLABS_API_KEY")
+        
+        if not api_key:
+            logger.error("ELEVENLABS_API_KEY not found in environment variables")
+            raise HTTPException(
+                status_code=500,
+                detail="ElevenLabs API key not configured on server"
+            )
+        
+        logger.info(f"Generating voice for text: {request.text[:50]}...")
+        
+        # Call ElevenLabs API
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                f"https://api.elevenlabs.io/v1/text-to-speech/{request.voice_id}",
+                headers={
+                    "Accept": "audio/mpeg",
+                    "Content-Type": "application/json",
+                    "xi-api-key": api_key,
+                },
+                json={
+                    "text": request.text,
+                    "model_id": request.model_id,
+                    "voice_settings": {
+                        "stability": 0.5,
+                        "similarity_boost": 0.75,
+                    }
+                }
+            )
+            
+            if response.status_code == 200:
+                logger.info("Voice generated successfully")
+                # Return audio as response
+                return Response(
+                    content=response.content,
+                    media_type="audio/mpeg",
+                    headers={
+                        "Content-Disposition": "inline; filename=voice.mp3"
+                    }
+                )
+            
+            elif response.status_code == 401:
+                logger.error("Invalid ElevenLabs API key")
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid API key configured on server"
+                )
+            
+            elif response.status_code == 429:
+                logger.warning("ElevenLabs quota exceeded")
+                raise HTTPException(
+                    status_code=429,
+                    detail="Quota exceeded. Please try again later."
+                )
+            
+            else:
+                error_text = response.text
+                logger.error(f"ElevenLabs API error: {response.status_code} - {error_text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"API error: {error_text[:100]}"
+                )
+    
+    except httpx.TimeoutException:
+        logger.error("ElevenLabs API request timeout")
+        raise HTTPException(
+            status_code=504,
+            detail="Request timeout. Please try again."
+        )
+    
+    except HTTPException:
+        raise
+    
+    except Exception as e:
+        logger.error(f"Error generating voice: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating voice: {str(e)}"
         )
 
 # Made with Bob
