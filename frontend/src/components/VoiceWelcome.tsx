@@ -14,63 +14,142 @@ export default function VoiceWelcome() {
       return;
     }
 
-    // Function to play welcome message
-    const playWelcome = () => {
+    // Function to play welcome message using ElevenLabs
+    const playWelcome = async () => {
       if (hasPlayed) return;
 
-      // Check if browser supports speech synthesis
-      if ('speechSynthesis' in window) {
-        // Create speech synthesis utterance
-        const utterance = new SpeechSynthesisUtterance(
-          "Hey! Welcome to AI API Key Tester. Happy to help you test your API keys!"
+      try {
+        // ElevenLabs API configuration
+        const ELEVENLABS_API_KEY = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
+        
+        // Custom voice ID (your selected voice)
+        // Other popular options:
+        // - Rachel: 21m00Tcm4TlvDq8ikWAM (warm, friendly)
+        // - Bella: EXAVITQu4vr4xnSDxMaL (warm, friendly)
+        // - Elli: MF3mGyEYCl7XYWbV9V6O (young, energetic)
+        // - Dorothy: ThT5KcBeYPX3keUQqHPh (mature, authoritative)
+        const VOICE_ID = 'ZT9u07TYPVl83ejeLakq'; // Your custom voice
+        
+        const message = "Hey! Welcome to AI API Key Tester. Happy to help you test your API keys!";
+
+        if (!ELEVENLABS_API_KEY) {
+          console.warn('ElevenLabs API key not found, falling back to browser voice');
+          playBrowserVoice(message);
+          return;
+        }
+
+        // Check if audio is already cached
+        const cachedAudio = localStorage.getItem('welcomeAudioCache');
+        if (cachedAudio) {
+          // Play cached audio
+          const audio = new Audio(cachedAudio);
+          audio.volume = 0.8;
+          await audio.play();
+          
+          sessionStorage.setItem('welcomeVoicePlayed', 'true');
+          setHasPlayed(true);
+          
+          // Remove event listeners
+          document.removeEventListener('click', playWelcome);
+          document.removeEventListener('keydown', playWelcome);
+          document.removeEventListener('touchstart', playWelcome);
+          return;
+        }
+
+        // Generate audio using ElevenLabs
+        const response = await fetch(
+          `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+          {
+            method: 'POST',
+            headers: {
+              'Accept': 'audio/mpeg',
+              'Content-Type': 'application/json',
+              'xi-api-key': ELEVENLABS_API_KEY,
+            },
+            body: JSON.stringify({
+              text: message,
+              model_id: 'eleven_monolingual_v1',
+              voice_settings: {
+                stability: 0.5,
+                similarity_boost: 0.75,
+              },
+            }),
+          }
         );
 
-        // Configure voice settings
-        utterance.rate = 0.9; // Slightly slower for clarity
-        utterance.pitch = 1.2; // Slightly higher pitch for female voice
-        utterance.volume = 0.8; // 80% volume
+        if (!response.ok) {
+          throw new Error('Failed to generate audio');
+        }
 
-        // Try to select a female voice
+        // Convert response to audio
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Cache the audio as base64 for future visits
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Audio = reader.result as string;
+          try {
+            localStorage.setItem('welcomeAudioCache', base64Audio);
+          } catch (e) {
+            console.warn('Could not cache audio:', e);
+          }
+        };
+        reader.readAsDataURL(audioBlob);
+
+        // Play the audio
+        const audio = new Audio(audioUrl);
+        audio.volume = 0.8;
+        await audio.play();
+
+        // Mark as played
+        sessionStorage.setItem('welcomeVoicePlayed', 'true');
+        setHasPlayed(true);
+
+        // Remove event listeners
+        document.removeEventListener('click', playWelcome);
+        document.removeEventListener('keydown', playWelcome);
+        document.removeEventListener('touchstart', playWelcome);
+
+      } catch (error) {
+        console.error('Failed to play ElevenLabs voice:', error);
+        // Fallback to browser voice
+        playBrowserVoice("Hey! Welcome to AI API Key Tester. Happy to help you test your API keys!");
+      }
+    };
+
+    // Fallback function using browser's speech synthesis
+    const playBrowserVoice = (message: string) => {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(message);
+        utterance.rate = 0.85;
+        utterance.pitch = 1.1;
+        utterance.volume = 0.7;
+
         const voices = window.speechSynthesis.getVoices();
         const femaleVoice = voices.find(voice => 
-          voice.name.toLowerCase().includes('female') ||
-          voice.name.toLowerCase().includes('samantha') ||
-          voice.name.toLowerCase().includes('victoria') ||
-          voice.name.toLowerCase().includes('karen') ||
-          voice.name.toLowerCase().includes('zira') ||
-          voice.name.toLowerCase().includes('google uk english female')
+          voice.name.includes('Google UK English Female') ||
+          voice.name.includes('Microsoft Zira') ||
+          voice.name.includes('Samantha') ||
+          voice.name.includes('Victoria')
         );
 
         if (femaleVoice) {
           utterance.voice = femaleVoice;
         }
 
-        // Play the welcome message
         window.speechSynthesis.speak(utterance);
-
-        // Mark as played in session storage
+        
         sessionStorage.setItem('welcomeVoicePlayed', 'true');
         setHasPlayed(true);
 
-        // Remove event listeners after playing
         document.removeEventListener('click', playWelcome);
         document.removeEventListener('keydown', playWelcome);
         document.removeEventListener('touchstart', playWelcome);
       }
     };
 
-    // Load voices (some browsers need this)
-    const loadVoices = () => {
-      window.speechSynthesis.getVoices();
-    };
-
-    if ('speechSynthesis' in window) {
-      loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
-
     // Add event listeners for first interaction
-    // Using multiple events to ensure it works on all devices
     document.addEventListener('click', playWelcome, { once: true });
     document.addEventListener('keydown', playWelcome, { once: true });
     document.addEventListener('touchstart', playWelcome, { once: true });
@@ -83,7 +162,6 @@ export default function VoiceWelcome() {
     };
   }, [hasPlayed]);
 
-  // This component doesn't render anything visible
   return null;
 }
 

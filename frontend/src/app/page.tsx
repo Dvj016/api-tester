@@ -20,6 +20,7 @@ const PROVIDERS: ProviderConfig[] = [
   { name: 'Replicate', value: 'replicate', description: 'Cloud AI', icon: '🔁' },
   { name: 'Together AI', value: 'together', description: 'Fast Inference', icon: '⚡' },
   { name: 'Perplexity', value: 'perplexity', description: 'Search AI', icon: '🔍' },
+  { name: 'ElevenLabs', value: 'elevenlabs', description: 'Voice AI', icon: '🎤' },
 ];
 
 export default function Home() {
@@ -61,7 +62,8 @@ export default function Home() {
       huggingface: ['gpt2', 'facebook/opt-350m', 'bigscience/bloom-560m'],
       replicate: ['meta/llama-2-70b-chat', 'stability-ai/sdxl'],
       together: ['togethercomputer/llama-2-70b-chat', 'mistralai/Mixtral-8x7B-Instruct-v0.1'],
-      perplexity: ['pplx-7b-chat', 'pplx-70b-chat', 'pplx-7b-online']
+      perplexity: ['pplx-7b-chat', 'pplx-70b-chat', 'pplx-7b-online'],
+      elevenlabs: ['eleven_monolingual_v1', 'eleven_multilingual_v1', 'eleven_multilingual_v2', 'eleven_turbo_v2']
     };
     return defaults[provider] || ['default-model'];
   };
