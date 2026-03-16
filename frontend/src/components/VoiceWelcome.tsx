@@ -53,7 +53,7 @@ export default function VoiceWelcome() {
             body: JSON.stringify({
               text: message,
               voice_id: VOICE_ID,
-              model_id: 'eleven_monolingual_v1',
+              model_id: 'eleven_turbo_v2',
             }),
           }
         );
