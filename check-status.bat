@@ -3,7 +3,7 @@ REM Simple Deployment Status Checker for Windows
 REM Replace these URLs with your actual deployment URLs
 
 set BACKEND_URL=https://ai-api-key-tester-backend.onrender.com
-set FRONTEND_URL=https://api-tester-ka68n3bnb-digvijay-singh-baghels-projects.vercel.app
+set FRONTEND_URL=https://api-tester-taupe.vercel.app
 
 echo.
 echo 🔍 Checking Deployment Status
@@ -50,3 +50,4 @@ echo.
 pause
 
 @REM Made with Bob
+
