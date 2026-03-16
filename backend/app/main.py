@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.models import HealthResponse
-from app.routers import openai, anthropic, gemini, nvidia, cohere, mistral, huggingface, replicate, together, perplexity
+from app.routers import openai, anthropic, gemini, nvidia, cohere, mistral, huggingface, replicate, together, perplexity, analytics
 from app.utils.logger import setup_logger
 from app.middleware import RateLimitMiddleware
 
@@ -36,6 +36,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(analytics.router, prefix="/api")
 app.include_router(openai.router, prefix="/api")
 app.include_router(anthropic.router, prefix="/api")
 app.include_router(gemini.router, prefix="/api")

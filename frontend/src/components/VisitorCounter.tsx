@@ -5,44 +5,48 @@ import { Users } from 'lucide-react';
 
 export default function VisitorCounter() {
   const [stats, setStats] = useState({
-    today: 0,
     total: 0,
     loading: true
   });
 
   useEffect(() => {
-    // Using CountAPI - a free visitor counter service
-    // No registration required, completely free
-    const fetchVisitorCount = async () => {
+    const fetchAndIncrementVisitor = async () => {
       try {
-        // Create a unique namespace for your website
-        const namespace = 'ai-api-key-tester';
-        const key = 'visits';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
         
-        // Hit the counter API (increments on each call)
-        const response = await fetch(
-          `https://api.countapi.xyz/hit/${namespace}/${key}`,
-          { method: 'GET' }
-        );
+        // Increment visitor count
+        const response = await fetch(`${apiUrl}/api/visitors/increment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         
         if (response.ok) {
           const data = await response.json();
           setStats({
-            today: data.value || 0,
-            total: data.value || 0,
+            total: data.total || 0,
             loading: false
           });
         } else {
-          // Fallback if API fails
-          setStats({ today: 0, total: 0, loading: false });
+          throw new Error('Failed to increment visitor');
         }
       } catch (error) {
-        console.error('Failed to fetch visitor count:', error);
-        setStats({ today: 0, total: 0, loading: false });
+        console.error('Failed to track visitor:', error);
+        // Fallback: Use localStorage for demo
+        const storedCount = localStorage.getItem('visitor_count');
+        const currentCount = storedCount ? parseInt(storedCount) : 0;
+        const newCount = currentCount + 1;
+        localStorage.setItem('visitor_count', newCount.toString());
+        
+        setStats({
+          total: newCount,
+          loading: false
+        });
       }
     };
 
-    fetchVisitorCount();
+    fetchAndIncrementVisitor();
   }, []);
 
   if (stats.loading) {
