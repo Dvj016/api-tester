@@ -1,3 +1,10 @@
+/**
+ * AI API Key Tester - Main Application Page
+ * Copyright (c) 2024-2026 Digvijay Singh Baghel (Dvj016)
+ * Licensed under MIT License - See LICENSE file for details
+ * Repository: https://github.com/Dvj016/api-tester
+ */
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -377,12 +384,38 @@ export default function Home() {
           <div className="border-t border-gray-700 pt-6">
             {/* Copyright and Creator */}
             <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 space-y-2 md:space-y-0">
-              <p>
-                © 2026 AI API Key Tester — All rights reserved.
-              </p>
-              <p className="text-gray-300">
-                Created by <span className="text-primary-400 font-semibold">Digvijay Singh Baghel</span>
-              </p>
+              <div className="text-center md:text-left">
+                <p className="font-semibold text-gray-300">
+                  © 2024-2026 Digvijay Singh Baghel (Dvj016) — All Rights Reserved
+                </p>
+                <p className="text-xs mt-1">
+                  AI API Key Tester™ • Licensed under{' '}
+                  <a
+                    href="https://github.com/Dvj016/api-tester/blob/main/LICENSE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-400 hover:text-primary-300 underline"
+                  >
+                    MIT License
+                  </a>
+                </p>
+              </div>
+              <div className="text-center md:text-right">
+                <p className="text-gray-300">
+                  Created with ❤️ by{' '}
+                  <a
+                    href="https://github.com/Dvj016"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-400 font-semibold hover:text-primary-300"
+                  >
+                    Digvijay Singh Baghel
+                  </a>
+                </p>
+                <p className="text-xs mt-1 text-gray-500">
+                  Unauthorized reproduction prohibited
+                </p>
+              </div>
             </div>
 
             {/* Visitor Counter */}

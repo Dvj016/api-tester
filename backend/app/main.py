@@ -1,3 +1,10 @@
+"""
+AI API Key Tester - Backend API
+Copyright (c) 2024-2026 Digvijay Singh Baghel (Dvj016)
+Licensed under MIT License - See LICENSE file for details
+Repository: https://github.com/Dvj016/api-tester
+"""
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings

@@ -1,5 +1,12 @@
 # AI API Key Tester
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Copyright](https://img.shields.io/badge/Copyright-2024--2026%20Digvijay%20Singh%20Baghel-blue)](https://github.com/Dvj016)
+[![GitHub](https://img.shields.io/badge/GitHub-Dvj016-181717?logo=github)](https://github.com/Dvj016/api-tester)
+
+> **Copyright © 2024-2026 Digvijay Singh Baghel (Dvj016)**  
+> All Rights Reserved. Licensed under [MIT License](LICENSE).
+
 A production-ready web application for testing AI API keys across multiple providers.
 
 ## Features
@@ -119,6 +126,27 @@ Once the backend is running, visit `http://localhost:8000/docs` for interactive 
 - CORS is configured for security
 - Request timeouts prevent hanging connections
 
-## License
+## License & Copyright
 
-MIT
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for full details.
+
+**Copyright © 2024-2026 Digvijay Singh Baghel (Dvj016)**
+All Rights Reserved.
+
+### Important Legal Information
+
+- **Trademark**: "AI API Key Tester" is a trademark of Digvijay Singh Baghel
+- **Attribution Required**: Any use must include proper attribution to the original author
+- **Copyright Notice**: Must be retained in all copies or substantial portions
+- **Full Terms**: See [COPYRIGHT.md](COPYRIGHT.md) for complete copyright information
+
+### Contact
+
+- **Author**: Digvijay Singh Baghel
+- **GitHub**: [@Dvj016](https://github.com/Dvj016)
+- **Email**: digvijay.baghel@ibm.com
+- **Repository**: https://github.com/Dvj016/api-tester
+
+---
+
+**Made with ❤️ by Digvijay Singh Baghel**

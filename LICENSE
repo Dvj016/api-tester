@@ -1,10 +1,7 @@
 MIT License
 
-<<<<<<< HEAD
-Copyright (c) 2024 AI API Key Tester
-=======
-Copyright (c) 2026 Dvj016
->>>>>>> 753d460d785b0974371a6ba4f5ff59c3d3442c45
+Copyright (c) 2024-2026 Digvijay Baghel (Dvj016)
+AI API Key Tester - https://github.com/Dvj016/api-tester
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +19,30 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-<<<<<<< HEAD
 SOFTWARE.
-=======
-SOFTWARE.
->>>>>>> 753d460d785b0974371a6ba4f5ff59c3d3442c45
+
+================================================================================
+ADDITIONAL TERMS AND CONDITIONS
+================================================================================
+
+1. ATTRIBUTION REQUIREMENT
+   Any use, modification, or distribution of this software must retain the
+   original copyright notice and attribution to Digvijay Baghel (Dvj016).
+
+2. COMMERCIAL USE
+   Commercial use is permitted under this license, but any derivative works
+   or commercial products must clearly acknowledge the original author.
+
+3. TRADEMARK NOTICE
+   "AI API Key Tester" is a trademark of Digvijay Baghel. Use of this name
+   in derivative works requires explicit permission.
+
+4. NO WARRANTY
+   This software is provided "as is" without warranty of any kind. The author
+   shall not be liable for any damages arising from the use of this software.
+
+5. GOVERNING LAW
+   This license shall be governed by and construed in accordance with the
+   laws of India.
+
+For questions regarding licensing, please contact: digvijay.baghel@ibm.com
