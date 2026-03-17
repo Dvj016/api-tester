@@ -38,18 +38,18 @@ def load_visitor_data():
         if VISITOR_FILE.exists():
             with open(VISITOR_FILE, 'r') as f:
                 data = json.load(f)
-                visitor_count = data.get('total', 0)
+                visitor_count = data.get('total', 1000)  # Default to 1000 if not found
                 unique_ips = set(data.get('unique_ips', []))
                 print(f"[Analytics] Loaded visitor data: {visitor_count} total visits, {len(unique_ips)} unique IPs")
         else:
-            # Initialize with default values
-            visitor_count = 0
+            # Initialize with baseline of 1000 visitors for better social proof
+            visitor_count = 1000
             unique_ips = set()
             save_visitor_data()
-            print("[Analytics] Initialized new visitor data file")
+            print("[Analytics] Initialized new visitor data file with baseline count of 1000")
     except Exception as e:
         print(f"[Analytics] Error loading visitor data: {e}")
-        visitor_count = 0
+        visitor_count = 1000  # Start at 1000 even on error
         unique_ips = set()
 
 
