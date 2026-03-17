@@ -7,6 +7,7 @@ import { Provider, TestResponse, ProviderConfig } from '@/lib/types';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import ResultCard from '@/components/ResultCard';
 import VisitorCounter from '@/components/VisitorCounter';
+import WakeUpModal from '@/components/WakeUpModal';
 
 const PROVIDERS: ProviderConfig[] = [
   { name: 'OpenAI', value: 'openai', description: 'GPT-4, GPT-3.5', icon: '🤖' },
@@ -29,6 +30,7 @@ export default function Home() {
   const [selectedModel, setSelectedModel] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TestResponse | null>(null);
+  const [showWakeUpModal, setShowWakeUpModal] = useState(false);
 
   // Load models when provider changes
   useEffect(() => {
@@ -90,44 +92,84 @@ export default function Home() {
         provider: selectedProvider,
       });
       setResult(response);
+      setShowWakeUpModal(false); // Hide modal on success
     } catch (error: any) {
-      // Handle different error formats
-      let errorMessage = 'Network error occurred';
+      // Check if it's a timeout or connection error (backend sleeping)
+      const isServerSleeping =
+        error.code === 'ECONNABORTED' ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('Network Error') ||
+        !error.response;
       
-      if (error.response?.data) {
-        const data = error.response.data;
-        // Handle FastAPI validation errors
-        if (data.detail) {
-          if (typeof data.detail === 'string') {
-            errorMessage = data.detail;
-          } else if (Array.isArray(data.detail)) {
-            // Format validation errors
-            errorMessage = data.detail.map((err: any) =>
-              `${err.loc?.join(' → ') || 'Field'}: ${err.msg}`
-            ).join(', ');
-          } else {
-            errorMessage = JSON.stringify(data.detail);
+      if (isServerSleeping) {
+        // Show wake-up modal
+        setShowWakeUpModal(true);
+        
+        // Retry after 45 seconds
+        setTimeout(async () => {
+          try {
+            const response = await testApiKey({
+              api_key: apiKey,
+              model: selectedModel,
+              provider: selectedProvider,
+            });
+            setResult(response);
+            setShowWakeUpModal(false);
+          } catch (retryError: any) {
+            setShowWakeUpModal(false);
+            handleError(retryError);
           }
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
+        }, 45000); // 45 seconds
+        
+        return; // Don't show error immediately
       }
       
-      setResult({
-        valid: false,
-        provider: selectedProvider,
-        model: selectedModel,
-        message: 'Failed to test API key',
-        error: errorMessage,
-        timestamp: new Date().toISOString(),
-      });
+      handleError(error);
     } finally {
-      setLoading(false);
+      if (!showWakeUpModal) {
+        setLoading(false);
+      }
     }
+  };
+
+  const handleError = (error: any) => {
+    let errorMessage = 'Network error occurred';
+    
+    if (error.response?.data) {
+      const data = error.response.data;
+      // Handle FastAPI validation errors
+      if (data.detail) {
+        if (typeof data.detail === 'string') {
+          errorMessage = data.detail;
+        } else if (Array.isArray(data.detail)) {
+          // Format validation errors
+          errorMessage = data.detail.map((err: any) =>
+            `${err.loc?.join(' → ') || 'Field'}: ${err.msg}`
+          ).join(', ');
+        } else {
+          errorMessage = JSON.stringify(data.detail);
+        }
+      }
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    setResult({
+      valid: false,
+      provider: selectedProvider,
+      model: selectedModel,
+      message: 'Failed to test API key',
+      error: errorMessage,
+      timestamp: new Date().toISOString(),
+    });
+    setLoading(false);
   };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Wake Up Modal */}
+      <WakeUpModal isVisible={showWakeUpModal} />
+      
       {/* Header */}
       <header className="border-b border-gray-700 bg-gray-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
