@@ -8,6 +8,9 @@ import LoadingAnimation from '@/components/LoadingAnimation';
 import ResultCard from '@/components/ResultCard';
 import VisitorCounter from '@/components/VisitorCounter';
 import WakeUpModal from '@/components/WakeUpModal';
+import TrustBadges from '@/components/TrustBadges';
+import NewsletterSignup from '@/components/NewsletterSignup';
+import AdBanner from '@/components/AdBanner';
 
 const PROVIDERS: ProviderConfig[] = [
   { name: 'OpenAI', value: 'openai', description: 'GPT-4, GPT-3.5', icon: '🤖' },
@@ -201,15 +204,18 @@ export default function Home() {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Test Your AI API Keys
-            </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Quickly validate your API keys for 10+ AI providers including OpenAI, Anthropic, Gemini, and more.
-              Get instant feedback with response time metrics.
-            </p>
-          </div>
+              <div className="text-center mb-12">
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  Test Your AI API Keys
+                </h2>
+                <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
+                  Quickly validate your API keys for 13 AI providers including OpenAI, Anthropic, Gemini, Groq, and more.
+                  Get instant feedback with response time metrics.
+                </p>
+                
+                {/* Trust Badges */}
+                <TrustBadges />
+              </div>
 
           {/* Test Form */}
           <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 mb-8 border border-gray-700">
@@ -298,6 +304,18 @@ export default function Home() {
               <ResultCard result={result} />
             </div>
           )}
+
+          {/* Ad Banner - After Results */}
+          {!loading && result && (
+            <div className="mt-8">
+              <AdBanner slot="RESULT_PAGE_AD_SLOT" format="horizontal" />
+            </div>
+          )}
+
+          {/* Newsletter Signup */}
+          <div className="mt-12">
+            <NewsletterSignup />
+          </div>
         </div>
       </div>
 
@@ -310,8 +328,8 @@ export default function Home() {
             <div>
               <h3 className="text-white font-semibold mb-3">AI API Key Tester</h3>
               <p className="text-gray-400 text-sm">
-                A professional developer tool for testing API keys across 10+ AI providers.
-                Fast, secure, and privacy-focused.
+                A professional developer tool for testing API keys across 13 AI providers.
+                Fast, secure, and privacy-focused. Trusted by 1,000+ developers worldwide.
               </p>
             </div>
 
