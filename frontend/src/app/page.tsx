@@ -100,28 +100,72 @@ export default function Home() {
 
     setLoading(true);
     setResult(null);
+    setShowWakeUpModal(false);
 
     try {
+      // First, check if backend is awake with a quick health check
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const healthCheckPromise = fetch(`${apiUrl}/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000) // 5 second timeout for health check
+      });
+
+      const healthResponse = await Promise.race([
+        healthCheckPromise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Health check timeout')), 5000)
+        )
+      ]).catch(() => null);
+
+      // If health check fails or times out, show wake-up modal
+      if (!healthResponse || !(healthResponse as Response).ok) {
+        console.log('[API] Backend appears to be sleeping, showing wake-up modal');
+        setShowWakeUpModal(true);
+        setLoading(false);
+        
+        // Wait 50 seconds for backend to wake up, then retry
+        setTimeout(async () => {
+          setLoading(true);
+          try {
+            const response = await testApiKey({
+              api_key: apiKey,
+              model: selectedModel,
+              provider: selectedProvider,
+            });
+            setResult(response);
+            setShowWakeUpModal(false);
+            setLoading(false);
+          } catch (retryError: any) {
+            setShowWakeUpModal(false);
+            setLoading(false);
+            handleError(retryError);
+          }
+        }, 50000); // 50 seconds
+        
+        return;
+      }
+
+      // Backend is awake, proceed with test
       const response = await testApiKey({
         api_key: apiKey,
         model: selectedModel,
         provider: selectedProvider,
       });
       setResult(response);
-      setShowWakeUpModal(false); // Hide modal on success
     } catch (error: any) {
-      // Check if it's a timeout or connection error (backend sleeping)
+      // Check if it's a timeout or connection error
       const isServerSleeping =
         error.code === 'ECONNABORTED' ||
         error.message?.includes('timeout') ||
         error.message?.includes('Network Error') ||
+        error.message?.includes('Health check timeout') ||
         !error.response;
       
-      if (isServerSleeping) {
+      if (isServerSleeping && !showWakeUpModal) {
         // Show wake-up modal
         setShowWakeUpModal(true);
         
-        // Retry after 45 seconds
+        // Retry after 50 seconds
         setTimeout(async () => {
           try {
             const response = await testApiKey({
@@ -134,8 +178,10 @@ export default function Home() {
           } catch (retryError: any) {
             setShowWakeUpModal(false);
             handleError(retryError);
+          } finally {
+            setLoading(false);
           }
-        }, 45000); // 45 seconds
+        }, 50000); // 50 seconds
         
         return; // Don't show error immediately
       }
