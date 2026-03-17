@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.models import HealthResponse
@@ -18,14 +18,56 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Configure CORS
+# Configure CORS with tighter restrictions
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],  # Only allow needed methods
+    allow_headers=["Content-Type", "Accept", "Authorization"],  # Specific headers only
+    max_age=600,  # Cache preflight requests for 10 minutes
 )
+
+# Add security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add security headers to all responses"""
+    response = await call_next(request)
+    
+    # Prevent MIME type sniffing
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    
+    # Prevent clickjacking
+    response.headers["X-Frame-Options"] = "DENY"
+    
+    # Enable XSS protection
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    
+    # Control referrer information
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    
+    # Permissions policy (formerly Feature-Policy)
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    
+    # Content Security Policy
+    csp_directives = [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  # Required for Next.js
+        "style-src 'self' 'unsafe-inline'",  # Required for Tailwind
+        "img-src 'self' data: https:",
+        "font-src 'self' data:",
+        f"connect-src 'self' {' '.join(settings.cors_origins)}",
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        "form-action 'self'"
+    ]
+    response.headers["Content-Security-Policy"] = "; ".join(csp_directives)
+    
+    # HSTS header (only in production, Render/Vercel handle this but adding for defense in depth)
+    if settings.environment == "production":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    
+    return response
 
 # Add rate limiting middleware
 # 10 requests per minute, 100 requests per hour per IP

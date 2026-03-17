@@ -3,7 +3,7 @@ import httpx
 import time
 from app.models import TestRequest, TestResponse
 from app.utils.logger import setup_logger
-from app.utils.security import mask_api_key
+from app.utils.security import mask_api_key, sanitize_error_message
 from app.config import settings
 
 router = APIRouter(prefix="/huggingface", tags=["Hugging Face"])
@@ -103,7 +103,7 @@ async def test_huggingface_key(request: TestRequest):
             )
         else:
             error_data = response.json() if response.text else {}
-            error_message = error_data.get("error", response.text)
+            error_message = sanitize_error_message(error_data.get("error", response.text))
             
             logger.error(f"Hugging Face API error for key {masked_key}: {error_message}")
             return TestResponse(
@@ -125,7 +125,7 @@ async def test_huggingface_key(request: TestRequest):
         )
     
     except Exception as e:
-        error_message = str(e)
+        error_message = sanitize_error_message(str(e))
         logger.error(f"Unexpected error testing Hugging Face key {masked_key}: {error_message}")
         
         return TestResponse(

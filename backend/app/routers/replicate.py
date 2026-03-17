@@ -3,7 +3,7 @@ import httpx
 import time
 from app.models import TestRequest, TestResponse
 from app.utils.logger import setup_logger
-from app.utils.security import mask_api_key
+from app.utils.security import mask_api_key, sanitize_error_message
 from app.config import settings
 
 router = APIRouter(prefix="/replicate", tags=["Replicate"])
@@ -87,7 +87,7 @@ async def test_replicate_key(request: TestRequest):
             )
         else:
             error_data = response.json() if response.text else {}
-            error_message = error_data.get("detail", response.text)
+            error_message = sanitize_error_message(error_data.get("detail", response.text))
             
             logger.error(f"Replicate API error for key {masked_key}: {error_message}")
             return TestResponse(
@@ -109,7 +109,7 @@ async def test_replicate_key(request: TestRequest):
         )
     
     except Exception as e:
-        error_message = str(e)
+        error_message = sanitize_error_message(str(e))
         logger.error(f"Unexpected error testing Replicate key {masked_key}: {error_message}")
         
         return TestResponse(

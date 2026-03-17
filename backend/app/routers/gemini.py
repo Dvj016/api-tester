@@ -3,7 +3,7 @@ import google.generativeai as genai
 import time
 from app.models import TestRequest, TestResponse
 from app.utils.logger import setup_logger
-from app.utils.security import mask_api_key, validate_api_key_format
+from app.utils.security import mask_api_key, validate_api_key_format, sanitize_error_message
 from app.config import settings
 
 router = APIRouter(prefix="/gemini", tags=["Google Gemini"])
@@ -85,7 +85,7 @@ async def test_gemini_key(request: TestRequest):
         )
         
     except Exception as e:
-        error_message = str(e)
+        error_message = sanitize_error_message(str(e))
         logger.error(f"Gemini API error for key {masked_key}: {error_message}")
         
         # Determine if it's an auth error or other error

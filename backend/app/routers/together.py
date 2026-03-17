@@ -3,7 +3,7 @@ import httpx
 import time
 from app.models import TestRequest, TestResponse
 from app.utils.logger import setup_logger
-from app.utils.security import mask_api_key
+from app.utils.security import mask_api_key, sanitize_error_message
 from app.config import settings
 
 router = APIRouter(prefix="/together", tags=["Together AI"])
@@ -97,7 +97,7 @@ async def test_together_key(request: TestRequest):
             )
         else:
             error_data = response.json() if response.text else {}
-            error_message = error_data.get("error", {}).get("message", response.text)
+            error_message = sanitize_error_message(error_data.get("error", {})).get("message", response.text)
             
             logger.error(f"Together AI API error for key {masked_key}: {error_message}")
             return TestResponse(
@@ -119,7 +119,7 @@ async def test_together_key(request: TestRequest):
         )
     
     except Exception as e:
-        error_message = str(e)
+        error_message = sanitize_error_message(str(e))
         logger.error(f"Unexpected error testing Together AI key {masked_key}: {error_message}")
         
         return TestResponse(
