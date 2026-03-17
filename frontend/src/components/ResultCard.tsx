@@ -3,6 +3,7 @@
 import React from 'react';
 import { CheckCircle, XCircle, Clock, Copy, AlertCircle } from 'lucide-react';
 import { TestResponse } from '@/lib/types';
+import ShareButton from './ShareButton';
 
 interface ResultCardProps {
   result: TestResponse;
@@ -85,6 +86,27 @@ export default function ResultCard({ result }: ResultCardProps) {
         <div className="text-xs text-gray-500 pt-2">
           Tested at: {new Date(result.timestamp).toLocaleString()}
         </div>
+
+        {/* Share Button - Only show on successful test */}
+        {result.valid && (
+          <div className="pt-4 border-t border-gray-700 mt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-white mb-1">
+                  🎉 Test Successful!
+                </p>
+                <p className="text-xs text-gray-400">
+                  Share this tool with your developer friends
+                </p>
+              </div>
+              <ShareButton
+                provider={result.provider}
+                model={result.model}
+                latency={result.latency_ms}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
