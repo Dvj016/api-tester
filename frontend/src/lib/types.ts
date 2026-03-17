@@ -1,4 +1,4 @@
-export type Provider = 'openai' | 'anthropic' | 'gemini' | 'nvidia' | 'cohere' | 'mistral' | 'huggingface' | 'replicate' | 'together' | 'perplexity';
+export type Provider = 'openai' | 'anthropic' | 'gemini' | 'nvidia' | 'cohere' | 'mistral' | 'huggingface' | 'replicate' | 'together' | 'perplexity' | 'groq' | 'fireworks' | 'ai21';
 
 export interface TestRequest {
   api_key: string;
