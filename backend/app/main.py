@@ -11,7 +11,7 @@ from app.config import settings
 from app.models import HealthResponse
 from app.routers import openai, anthropic, gemini, nvidia, cohere, mistral, huggingface, replicate, together, perplexity, analytics, groq, fireworks, ai21
 from app.utils.logger import setup_logger
-from app.middleware import RateLimitMiddleware
+from app.middleware import RateLimitMiddleware, DDoSProtectionMiddleware, RequestValidationMiddleware
 
 # Setup logger
 logger = setup_logger(__name__)
@@ -76,7 +76,21 @@ async def add_security_headers(request: Request, call_next):
     
     return response
 
-# Add rate limiting middleware
+# Add DDoS protection middleware (first line of defense)
+# Protects against: oversized requests, malicious patterns, IP banning
+app.add_middleware(
+    DDoSProtectionMiddleware,
+    max_request_size=1024 * 1024,  # 1MB max request size
+    max_requests_per_second=5,  # 5 requests per second per IP
+    ban_duration_minutes=15,  # Ban for 15 minutes
+    suspicious_threshold=10  # Ban after 10 suspicious activities
+)
+
+# Add request validation middleware
+# Validates content types and required headers
+app.add_middleware(RequestValidationMiddleware)
+
+# Add rate limiting middleware (second line of defense)
 # 10 requests per minute, 100 requests per hour per IP
 app.add_middleware(
     RateLimitMiddleware,
