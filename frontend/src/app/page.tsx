@@ -191,7 +191,10 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Zap className="w-8 h-8 text-primary-500" />
-            <h1 className="text-2xl font-bold text-white">AI API Key Tester</h1>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-white">AI API Key Tester</h1>
+              <p className="text-xs text-gray-400 hidden md:block">Secure testing without exposing your secrets</p>
+            </div>
           </div>
           <button
             onClick={() => setDarkMode(!darkMode)}
@@ -213,11 +216,15 @@ export default function Home() {
           {/* Hero Section */}
               <div className="text-center mb-12">
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  Test Your AI API Keys
+                  <span className="bg-gradient-to-r from-primary-400 to-purple-500 bg-clip-text text-transparent">
+                    Secure AI API Key Testing
+                  </span>
+                  <br />
+                  <span className="text-3xl md:text-4xl">Without Exposing Your Secrets</span>
                 </h2>
-                <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
-                  Quickly validate your API keys for 13 AI providers including OpenAI, Anthropic, Gemini, Groq, and more.
-                  Get instant feedback with response time metrics.
+                <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-4">
+                  Validate API keys for <span className="text-primary-400 font-semibold">13 AI providers</span> including OpenAI, Anthropic, Gemini, Groq, and more.
+                  <span className="block mt-2 text-green-400">🔒 Keys never stored • Enterprise-grade security • Instant validation</span>
                 </p>
                 
                 {/* Trust Badges */}
