@@ -32,16 +32,23 @@ def get_client_ip(request: Request) -> str:
 
 @router.get("/visitors/count")
 async def get_visitor_count(request: Request):
-    """Get current visitor count from secure permanent storage"""
+    """Get current visitor count from persistent storage"""
     try:
         total, unique = get_visitor_stats()
         
-        return JSONResponse({
-            "total": total,
-            "unique": unique,
-            "storage": "Secure JSON (Zero PII)",
-            "timestamp": datetime.now().isoformat()
-        })
+        return JSONResponse(
+            {
+                "total": total,
+                "unique": unique,
+                "storage": "Persistent JSON",
+                "timestamp": datetime.now().isoformat()
+            },
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     except Exception as e:
         print(f"[Analytics] Error getting visitor count: {e}")
         return JSONResponse({
@@ -54,22 +61,27 @@ async def get_visitor_count(request: Request):
 
 @router.post("/visitors/increment")
 async def increment_visitor_count(request: Request):
-    """Increment visitor count with enterprise security (Zero PII)"""
+    """Increment total visit counter on EVERY request"""
     try:
-        client_ip = get_client_ip(request)
+        # Increment total visits (no IP tracking needed for total visits)
+        total, unique, is_new_visitor = increment_visitor()
         
-        # Increment visitor count securely (IP never stored)
-        total, unique, is_new_visitor = increment_visitor(client_ip)
+        print(f"[Analytics] Total visits: {total}")
         
-        print(f"[Analytics] Visitor count: {total} total, {unique} unique (Secure Storage)")
-        
-        return JSONResponse({
-            "total": total,
-            "unique": unique,
-            "is_new_visitor": is_new_visitor,
-            "storage": "Secure JSON (Zero PII)",
-            "timestamp": datetime.now().isoformat()
-        })
+        return JSONResponse(
+            {
+                "total": total,
+                "unique": unique,
+                "is_new_visitor": is_new_visitor,
+                "storage": "Persistent JSON",
+                "timestamp": datetime.now().isoformat()
+            },
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     except Exception as e:
         print(f"[Analytics] Error incrementing visitor: {e}")
         # Return fallback values
