@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
@@ -59,12 +59,14 @@ export const metadata: Metadata = {
     description: 'Free developer tool to test and validate API keys for 10+ AI providers.',
     creator: '@digvijaybaghel',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-  },
   category: 'technology',
+}
+
+// Viewport configuration (Next.js 14+ requires separate export)
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 }
 
 export default function RootLayout({

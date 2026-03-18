@@ -15,11 +15,10 @@
 
 import Script from 'next/script';
 import { useEffect } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export default function GoogleAnalytics() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   
   // Get GA Measurement ID from environment variable
   const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -30,16 +29,14 @@ export default function GoogleAnalytics() {
 
     // @ts-ignore
     if (typeof window.gtag !== 'undefined') {
-      const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
-      
       // @ts-ignore
       window.gtag('config', GA_MEASUREMENT_ID, {
-        page_path: url,
+        page_path: pathname,
       });
       
-      console.log('[Google Analytics] Page view tracked:', url);
+      console.log('[Google Analytics] Page view tracked:', pathname);
     }
-  }, [pathname, searchParams, GA_MEASUREMENT_ID]);
+  }, [pathname, GA_MEASUREMENT_ID]);
 
   // Don't render if GA_MEASUREMENT_ID is not set
   if (!GA_MEASUREMENT_ID) {
