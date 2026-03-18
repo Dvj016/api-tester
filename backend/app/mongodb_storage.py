@@ -8,6 +8,7 @@ Survives deployments, restarts, and service sleep on Render.
 import os
 from datetime import datetime
 from typing import Tuple, Optional
+from urllib.parse import quote_plus
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, OperationFailure
 import threading
@@ -40,12 +41,14 @@ def connect_mongodb():
             print("[MongoDB] MONGODB_URI not configured - using fallback storage")
             return False
         
-        # Connect to MongoDB
+        # Connect to MongoDB with SSL/TLS settings
         _client = MongoClient(
             uri,
             serverSelectionTimeoutMS=5000,  # 5 second timeout
             connectTimeoutMS=5000,
-            socketTimeoutMS=5000
+            socketTimeoutMS=5000,
+            tls=True,
+            tlsAllowInvalidCertificates=True  # Allow self-signed certs on Render
         )
         
         # Test connection
