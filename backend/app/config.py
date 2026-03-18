@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     # CORS
     allowed_origins: str = "http://localhost:3000"
     
+    # MongoDB
+    mongodb_uri: str = ""
+    
     # API Settings
     api_timeout: int = 30
     

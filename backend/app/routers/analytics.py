@@ -2,16 +2,25 @@
 Analytics router for visitor tracking with Enterprise Security
 Copyright (c) 2024-2026 Digvijay Singh Baghel (Dvj016)
 
-Uses secure JSON storage with zero PII, cryptographic hashing, and thread-safe operations.
-Tracks BOTH total visits AND unique visitors separately.
+Uses MongoDB Atlas for persistent storage that survives deployments and restarts.
+Tracks BOTH total visits AND unique visitors separately with zero PII.
 """
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from datetime import datetime
+import os
 
-# Use secure simple storage (no external dependencies)
-from app.simple_storage import get_visitor_stats, increment_visitor, reset_visitor_stats
-from app.unique_visitor_storage import check_and_add_unique_visitor, get_unique_visitor_count
+# Try MongoDB first, fallback to JSON if not available
+try:
+    from app.mongodb_storage import get_visitor_stats, increment_visitor, reset_visitor_stats
+    from app.unique_visitor_storage import check_and_add_unique_visitor, get_unique_visitor_count
+    STORAGE_TYPE = "MongoDB Atlas"
+    print("[Analytics] Using MongoDB Atlas for persistent storage")
+except Exception as e:
+    print(f"[Analytics] MongoDB not available ({e}), using JSON fallback")
+    from app.simple_storage import get_visitor_stats, increment_visitor, reset_visitor_stats
+    from app.unique_visitor_storage import check_and_add_unique_visitor, get_unique_visitor_count
+    STORAGE_TYPE = "JSON (Ephemeral)"
 
 router = APIRouter()
 
@@ -42,7 +51,7 @@ async def get_visitor_count(request: Request):
             {
                 "total": total,
                 "unique": unique,
-                "storage": "Persistent JSON",
+                "storage": STORAGE_TYPE,
                 "timestamp": datetime.now().isoformat()
             },
             headers={
@@ -81,7 +90,7 @@ async def increment_visitor_count(request: Request):
                 "total": total,
                 "unique": unique_count,
                 "is_new_visitor": is_new_unique,
-                "storage": "Persistent JSON",
+                "storage": STORAGE_TYPE,
                 "timestamp": datetime.now().isoformat()
             },
             headers={
