@@ -3,6 +3,7 @@ Analytics router for visitor tracking with Enterprise Security
 Copyright (c) 2024-2026 Digvijay Singh Baghel (Dvj016)
 
 Uses secure JSON storage with zero PII, cryptographic hashing, and thread-safe operations.
+Tracks BOTH total visits AND unique visitors separately.
 """
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -10,6 +11,7 @@ from datetime import datetime
 
 # Use secure simple storage (no external dependencies)
 from app.simple_storage import get_visitor_stats, increment_visitor, reset_visitor_stats
+from app.unique_visitor_storage import check_and_add_unique_visitor, get_unique_visitor_count
 
 router = APIRouter()
 
@@ -61,18 +63,24 @@ async def get_visitor_count(request: Request):
 
 @router.post("/visitors/increment")
 async def increment_visitor_count(request: Request):
-    """Increment total visit counter on EVERY request"""
+    """Increment total visit counter AND track unique visitors"""
     try:
-        # Increment total visits (no IP tracking needed for total visits)
-        total, unique, is_new_visitor = increment_visitor()
+        # Get client IP for unique visitor tracking
+        client_ip = get_client_ip(request)
         
-        print(f"[Analytics] Total visits: {total}")
+        # Increment total visits (always increments)
+        total, _, _ = increment_visitor()
+        
+        # Track unique visitors separately (uses secure hashing, no PII)
+        unique_count, is_new_unique = check_and_add_unique_visitor(client_ip)
+        
+        print(f"[Analytics] Total visits: {total}, Unique visitors: {unique_count}")
         
         return JSONResponse(
             {
                 "total": total,
-                "unique": unique,
-                "is_new_visitor": is_new_visitor,
+                "unique": unique_count,
+                "is_new_visitor": is_new_unique,
                 "storage": "Persistent JSON",
                 "timestamp": datetime.now().isoformat()
             },

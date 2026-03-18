@@ -138,3 +138,7 @@ app/data/
 *.db
 *.sqlite
 *.sqlite3
+
+# Unique Visitor Tracking (Security: Never commit hashes or salt)
+app/data/unique_visitors.json
+app/data/.unique_salt
