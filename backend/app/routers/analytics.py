@@ -1,22 +1,15 @@
 """
-Analytics router for visitor tracking with Supabase PostgreSQL
+Analytics router for visitor tracking with Enterprise Security
 Copyright (c) 2024-2026 Digvijay Singh Baghel (Dvj016)
 
-Uses Supabase free tier for permanent storage that never resets.
+Uses secure JSON storage with zero PII, cryptographic hashing, and thread-safe operations.
 """
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from datetime import datetime
 
-# Try Supabase first, fallback to SQLite
-try:
-    from app.supabase_db import get_visitor_stats, increment_visitor, reset_visitor_stats, is_supabase_configured
-    USE_SUPABASE = True
-except ImportError:
-    from app.database import get_visitor_stats, increment_visitor, reset_visitor_stats
-    USE_SUPABASE = False
-    def is_supabase_configured():
-        return False
+# Use secure simple storage (no external dependencies)
+from app.simple_storage import get_visitor_stats, increment_visitor, reset_visitor_stats
 
 router = APIRouter()
 
@@ -39,15 +32,14 @@ def get_client_ip(request: Request) -> str:
 
 @router.get("/visitors/count")
 async def get_visitor_count(request: Request):
-    """Get current visitor count from permanent storage"""
+    """Get current visitor count from secure permanent storage"""
     try:
         total, unique = get_visitor_stats()
-        storage_type = "Supabase" if (USE_SUPABASE and is_supabase_configured()) else "SQLite"
         
         return JSONResponse({
             "total": total,
             "unique": unique,
-            "storage": storage_type,
+            "storage": "Secure JSON (Zero PII)",
             "timestamp": datetime.now().isoformat()
         })
     except Exception as e:
@@ -62,21 +54,20 @@ async def get_visitor_count(request: Request):
 
 @router.post("/visitors/increment")
 async def increment_visitor_count(request: Request):
-    """Increment visitor count with permanent storage"""
+    """Increment visitor count with enterprise security (Zero PII)"""
     try:
         client_ip = get_client_ip(request)
         
-        # Increment visitor count in database
+        # Increment visitor count securely (IP never stored)
         total, unique, is_new_visitor = increment_visitor(client_ip)
-        storage_type = "Supabase" if (USE_SUPABASE and is_supabase_configured()) else "SQLite"
         
-        print(f"[Analytics] Visitor count: {total} total, {unique} unique (Storage: {storage_type})")
+        print(f"[Analytics] Visitor count: {total} total, {unique} unique (Secure Storage)")
         
         return JSONResponse({
             "total": total,
             "unique": unique,
             "is_new_visitor": is_new_visitor,
-            "storage": storage_type,
+            "storage": "Secure JSON (Zero PII)",
             "timestamp": datetime.now().isoformat()
         })
     except Exception as e:
