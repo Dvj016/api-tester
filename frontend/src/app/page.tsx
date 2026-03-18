@@ -44,6 +44,38 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TestResponse | null>(null);
   const [showWakeUpModal, setShowWakeUpModal] = useState(false);
+  const [backendChecked, setBackendChecked] = useState(false);
+
+  // Check if backend is awake on page load
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+        
+        const response = await fetch(`${apiUrl}/health`, {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          console.log('[Backend Check] Backend is sleeping, showing wake-up modal');
+          setShowWakeUpModal(true);
+        } else {
+          console.log('[Backend Check] Backend is awake');
+        }
+      } catch (error) {
+        console.log('[Backend Check] Backend appears to be sleeping, showing wake-up modal');
+        setShowWakeUpModal(true);
+      } finally {
+        setBackendChecked(true);
+      }
+    };
+
+    checkBackendStatus();
+  }, []); // Run once on page load
 
   // Load models when provider changes
   useEffect(() => {
@@ -230,7 +262,13 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Wake Up Modal */}
-      <WakeUpModal isVisible={showWakeUpModal} />
+      <WakeUpModal
+        isVisible={showWakeUpModal}
+        onBackendReady={() => {
+          console.log('[Page] Backend is ready, hiding modal');
+          setShowWakeUpModal(false);
+        }}
+      />
       
       {/* Header */}
       <header className="border-b border-gray-700 bg-gray-900/50 backdrop-blur-sm">

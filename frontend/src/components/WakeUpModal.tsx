@@ -1,17 +1,64 @@
 'use client';
 
-import React from 'react';
-import { Loader2, Server, Clock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Loader2, Server, Clock, CheckCircle } from 'lucide-react';
 
 interface WakeUpModalProps {
   isVisible: boolean;
+  onBackendReady?: () => void;
 }
 
-export default function WakeUpModal({ isVisible }: WakeUpModalProps) {
+export default function WakeUpModal({ isVisible, onBackendReady }: WakeUpModalProps) {
+  const [secondsElapsed, setSecondsElapsed] = useState(0);
+  const [checkingBackend, setCheckingBackend] = useState(false);
+
+  useEffect(() => {
+    if (!isVisible) {
+      setSecondsElapsed(0);
+      return;
+    }
+
+    // Start timer
+    const timer = setInterval(() => {
+      setSecondsElapsed(prev => prev + 1);
+    }, 1000);
+
+    // Start checking backend after 30 seconds
+    const checkTimer = setTimeout(() => {
+      setCheckingBackend(true);
+      checkBackendStatus();
+    }, 30000);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(checkTimer);
+    };
+  }, [isVisible]);
+
+  const checkBackendStatus = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/health`);
+      
+      if (response.ok) {
+        console.log('[Wake-Up Modal] Backend is now ready!');
+        if (onBackendReady) {
+          onBackendReady();
+        }
+      } else {
+        // Check again in 5 seconds
+        setTimeout(checkBackendStatus, 5000);
+      }
+    } catch (error) {
+      // Check again in 5 seconds
+      setTimeout(checkBackendStatus, 5000);
+    }
+  };
+
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-8 border border-gray-700 animate-fade-in">
         {/* Icon */}
         <div className="flex justify-center mb-6">
@@ -25,13 +72,25 @@ export default function WakeUpModal({ isVisible }: WakeUpModalProps) {
 
         {/* Title */}
         <h3 className="text-2xl font-bold text-white text-center mb-3">
-          Waking Up Server
+          {checkingBackend ? 'Almost Ready!' : 'Waking Up Server'}
         </h3>
 
         {/* Description */}
         <p className="text-gray-300 text-center mb-6 leading-relaxed">
-          Our backend service is starting up from sleep mode. This happens on the free tier after 15 minutes of inactivity.
+          {checkingBackend
+            ? 'Backend is warming up, checking connection...'
+            : 'Our backend service is starting up from sleep mode. This happens on the free tier after 15 minutes of inactivity.'}
         </p>
+
+        {/* Timer */}
+        <div className="bg-blue-500/10 rounded-lg p-3 mb-4 border border-blue-500/30">
+          <div className="text-center">
+            <span className="text-blue-400 font-mono text-lg font-bold">
+              {secondsElapsed}s
+            </span>
+            <span className="text-gray-400 text-sm ml-2">elapsed</span>
+          </div>
+        </div>
 
         {/* Loading Indicator */}
         <div className="flex items-center justify-center space-x-3 mb-6">
@@ -40,7 +99,7 @@ export default function WakeUpModal({ isVisible }: WakeUpModalProps) {
         </div>
 
         {/* Time Estimate */}
-        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700 mb-4">
           <div className="flex items-center justify-center space-x-2 text-gray-300">
             <Clock className="w-4 h-4" />
             <span className="text-sm">
@@ -49,10 +108,27 @@ export default function WakeUpModal({ isVisible }: WakeUpModalProps) {
           </div>
         </div>
 
-        {/* Info Text */}
-        <p className="text-xs text-gray-500 text-center mt-4">
-          Please wait while we establish connection...
-        </p>
+        {/* Status Messages */}
+        {secondsElapsed < 20 && (
+          <p className="text-xs text-gray-400 text-center">
+            ⏳ Server is waking up...
+          </p>
+        )}
+        {secondsElapsed >= 20 && secondsElapsed < 40 && (
+          <p className="text-xs text-yellow-400 text-center">
+            ⚡ Almost there, loading services...
+          </p>
+        )}
+        {secondsElapsed >= 40 && !checkingBackend && (
+          <p className="text-xs text-green-400 text-center">
+            ✓ Should be ready soon, checking connection...
+          </p>
+        )}
+        {checkingBackend && (
+          <p className="text-xs text-blue-400 text-center animate-pulse">
+            🔄 Verifying backend connection...
+          </p>
+        )}
 
         {/* Progress Bar */}
         <div className="mt-6 w-full bg-gray-700 rounded-full h-2 overflow-hidden">
