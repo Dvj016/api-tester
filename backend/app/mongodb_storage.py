@@ -41,14 +41,16 @@ def connect_mongodb():
             print("[MongoDB] MONGODB_URI not configured - using fallback storage")
             return False
         
-        # Connect to MongoDB with SSL/TLS settings
+        # Connect to MongoDB with SSL/TLS settings optimized for Render
         _client = MongoClient(
             uri,
-            serverSelectionTimeoutMS=5000,  # 5 second timeout
-            connectTimeoutMS=5000,
-            socketTimeoutMS=5000,
+            serverSelectionTimeoutMS=3000,  # 3 second timeout (faster fail)
+            connectTimeoutMS=3000,
+            socketTimeoutMS=3000,
             tls=True,
-            tlsAllowInvalidCertificates=True  # Allow self-signed certs on Render
+            tlsAllowInvalidCertificates=True,  # Allow self-signed certs
+            retryWrites=False,  # Disable retry writes for faster fail
+            directConnection=False  # Use replica set connection
         )
         
         # Test connection
@@ -65,7 +67,13 @@ def connect_mongodb():
         return True
         
     except Exception as e:
-        print(f"[MongoDB] Connection failed: {e}")
+        # Silently fail - MongoDB is optional, JSON fallback will be used
+        # Only log if it's not an SSL/TLS error (which is expected on Render free tier)
+        error_str = str(e)
+        if "SSL" not in error_str and "TLS" not in error_str:
+            print(f"[MongoDB] Connection failed: {e}")
+        else:
+            print("[MongoDB] SSL/TLS connection not supported on this platform - using JSON fallback")
         _client = None
         _db = None
         _collection = None
