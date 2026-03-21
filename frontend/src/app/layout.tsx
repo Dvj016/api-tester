@@ -62,6 +62,9 @@ export const metadata: Metadata = {
     creator: '@digvijaybaghel',
   },
   category: 'technology',
+  verification: {
+    google: '4u3oJEdRnvVQZYOyadRsppmGMmJZIp8tpAh7dzWOAuQ',
+  },
 }
 
 // Viewport configuration (Next.js 14+ requires separate export)
