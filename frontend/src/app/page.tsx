@@ -436,6 +436,11 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-3">Legal</h3>
               <ul className="space-y-2 text-sm">
                 <li>
+                  <a href="/faq" className="text-gray-400 hover:text-primary-400 transition-colors">
+                    FAQ
+                  </a>
+                </li>
+                <li>
                   <a href="/privacy" className="text-gray-400 hover:text-primary-400 transition-colors">
                     Privacy Policy
                   </a>
